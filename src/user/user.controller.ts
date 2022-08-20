@@ -1,7 +1,8 @@
-import { Controller, Get, Res, Post, HttpStatus, Body } from '@nestjs/common';
+import { Controller, Get, Res, Post, HttpStatus, Body, ValidationPipe, Put, Param, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Response } from 'express';
 import { UserEntity } from './user.entity';
+import { CreateUserDto } from './user.dto';
 import { Observable } from 'rxjs';
 
 @Controller('user')
@@ -9,20 +10,31 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Post()
-    create(@Body() user: UserEntity): Observable<UserEntity> {
-      return this.userService.createUser(user)
+    async create(
+      @Body(new ValidationPipe()) createUserDto: CreateUserDto,
+    ) {
+      return this.userService.createUser(createUserDto);
+    }
+
+    @Post('/:id')
+    async update(
+      @Body() createUserDto: CreateUserDto,
+    ) {
+      return this.userService.createUser(createUserDto);
     }
     
     @Get()
-    getAllusers(): Observable<UserEntity[]>{
+    getAllUsers(): Promise<UserEntity[]>{
       return this.userService.findAll();
     }
 
-  @Get(':id')
-  getUserById(@Res() res: Response){
-    res.status(HttpStatus.OK).json(this.userService.findAll());
+  @Get('/:id')
+  getUserById(@Param('id') id: number) : Promise<UserEntity>{
+      return this.userService.findOne(id);
   }
 
-  /* @Post()
-  create(): */
+  @Delete('/:id')
+  delete(@Param('id') id: number){
+    return this.userService.remove(id);
+  }
 }
